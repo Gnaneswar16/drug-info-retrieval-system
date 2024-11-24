@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Information Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Styling for page elements */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: url("images/10508384.jpg") no-repeat center center fixed;
+            background-size: cover;
+            color: #343a40;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
+            border-radius: 15px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+        }
+        h1 {
+            text-align: center;
+            color: #3a5ba0;
+            font-weight: 700;
+        }
+        .welcome-message {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: #555;
+        }
+        label, input {
+            display: block;
+            margin: 15px 0 5px;
+        }
+        input {
+            width: 80%;
+            padding: 15px;
+            font-size: 1em;
+            border: 2px solid #3a5ba0;
+            border-radius: 12px;
+            transition: all 0.3s;
+            margin: 0 auto;
+        }
+        input:focus {
+            border-color: #5a85d8;
+            outline: none;
+            box-shadow: 0 4px 10px rgba(90, 133, 216, 0.2);
+        }
+        button {
+            padding: 12px 20px;
+            background-color: #3a5ba0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 10px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        button:hover {
+            background-color: #5a85d8;
+            box-shadow: 0 6px 15px rgba(58, 91, 160, 0.4);
+        }
+        .result {
+            margin-top: 30px;
+        }
+        .drug {
+            border: 1px solid #c3d4f7;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 10px;
+            background-color: #e6effd;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .drug:hover {
+            transform: scale(1.05);
+        }
+        .drug h2 {
+            color: #3a5ba0;
+            margin: 0 0 10px;
+            font-weight: 700;
+        }
+        .drug p {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+        .error-message {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Drug Information Search</h1>
+        <div class="welcome-message">
+            <p>Welcome to the Drug Information Portal!</p>
+            <p>This application provides detailed information about various drugs.</p>
+            <p>Search for a drug using the search bar below.</p>
+        </div>
+        <label for="drug-name">Enter Drug Name:</label>
+        <input type="text" id="drug-name" placeholder="e.g., Augmentin or Pain Relief" />
+        <button onclick="searchDrug()">Search</button>
+
+        <div class="result" id="result"></div>
+        <div class="error-message" id="error-message"></div>
+    </div>
+
+    <script>
+        async function searchDrug() {
+            const drugName = document.getElementById('drug-name').value.trim();
+            const resultDiv = document.getElementById('result');
+            const errorMessageDiv = document.getElementById('error-message');
+
+            resultDiv.innerHTML = '';
+            errorMessageDiv.innerHTML = '';
+
+            if (!drugName) {
+                errorMessageDiv.innerHTML = 'Please enter a drug name.';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:5000/drug/${drugName}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    const resultsHtml = data.map(drug => `
+                        <div class="drug">
+                            <h2>${drug.name}</h2>
+                            <p><strong>Uses:</strong> ${drug.uses.length > 0 ? drug.uses.join(', ') : "None"}</p>
+                            <p><strong>Side Effects:</strong> ${drug.sideEffects.length > 0 ? drug.sideEffects.join(', ') : "None"}</p>
+                            <p><strong>Substitutes:</strong> ${drug.substitutes.length > 0 ? drug.substitutes.join(', ') : "None"}</p>
+                            <p><strong>Chemical Class:</strong> ${drug.chemicalClass}</p>
+                            <p><strong>Habit Forming:</strong> ${drug.habitForming}</p>
+                            <p><strong>Therapeutic Class:</strong> ${drug.therapeuticClass}</p>
+                            <p><strong>Action Class:</strong> ${drug.actionClass}</p>
+                        </div>
+                    `).join('');
+                    resultDiv.innerHTML = resultsHtml;
+                } else {
+                    errorMessageDiv.innerHTML = data.error || 'An error occurred while fetching drug information.';
+                }
+            } catch (error) {
+                console.error('Error fetching drug information:', error);
+                errorMessageDiv.innerHTML = 'Error fetching drug information.';
+            }
+        }
+    </script>
+</body>
+</html>
